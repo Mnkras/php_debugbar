@@ -45,11 +45,16 @@ class Controller extends \Package
 
         // Cache javascript renderer object.
         $renderer = $bar->getJavascriptRenderer('/packages/php_debugbar/vendor/maximebf/debugbar/src/DebugBar/Resources');
+
         \Database::connection()->getConfiguration()->setSQLLogger($debugStack);
+
         $bar->addCollector(new \DebugBar\Bridge\DoctrineCollector($debugStack));
         \View::getInstance()->addHeaderItem($renderer->renderHead());
-        \Events::addListener('on_shutdown', function() use ($renderer) {
-            echo $renderer->render();
+
+        \Events::addListener('on_shutdown', function () use ($renderer) {
+            if(is_object(\Page::getCurrentPage())) {
+                echo $renderer->render();
+            }
         });
     }
 
