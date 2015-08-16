@@ -3,13 +3,14 @@ namespace Concrete\Package\PhpDebugbar;
 
 use DebugBar\StandardDebugBar;
 use Illuminate\Filesystem\Filesystem;
+use Request;
 
 class Controller extends \Package
 {
 
     protected $pkgHandle = 'php_debugbar';
     protected $appVersionRequired = '5.7.4';
-    protected $pkgVersion = '0.9';
+    protected $pkgVersion = '0.9.1';
 
     public function getPackageDescription()
     {
@@ -37,25 +38,28 @@ class Controller extends \Package
 
     public function on_start()
     {
-        $filesystem = new Filesystem();
-        $filesystem->getRequire(__DIR__ . '/vendor/autoload.php');
+        $req = Request::getInstance();
+        if(!$req->isXmlHttpRequest()) {
+            $filesystem = new Filesystem();
+            $filesystem->getRequire(__DIR__ . '/vendor/autoload.php');
 
-        \Core::make('app')->instance('debugbar', $bar = new StandardDebugBar());
-        $debugStack = new \Doctrine\DBAL\Logging\DebugStack();
+            \Core::make('app')->instance('debugbar', $bar = new StandardDebugBar());
+            $debugStack = new \Doctrine\DBAL\Logging\DebugStack();
 
-        // Cache javascript renderer object.
-        $renderer = $bar->getJavascriptRenderer(BASE_URL . '/packages/php_debugbar/vendor/maximebf/debugbar/src/DebugBar/Resources');
+            // Cache javascript renderer object.
+            $renderer = $bar->getJavascriptRenderer(BASE_URL . '/packages/php_debugbar/vendor/maximebf/debugbar/src/DebugBar/Resources');
 
-        \Database::connection()->getConfiguration()->setSQLLogger($debugStack);
+            \Database::connection()->getConfiguration()->setSQLLogger($debugStack);
 
-        $bar->addCollector(new \DebugBar\Bridge\DoctrineCollector($debugStack));
-        \View::getInstance()->addHeaderItem($renderer->renderHead());
+            $bar->addCollector(new \DebugBar\Bridge\DoctrineCollector($debugStack));
+            \View::getInstance()->addHeaderItem($renderer->renderHead());
 
-        \Events::addListener('on_shutdown', function () use ($renderer) {
-            if(is_object(\Page::getCurrentPage())) {
-                echo $renderer->render();
-            }
-        });
+            \Events::addListener('on_shutdown', function () use ($renderer) {
+                if(is_object(\Page::getCurrentPage())) {
+                    echo $renderer->render();
+                }
+            });
+        }
     }
 
 }
