@@ -47,7 +47,7 @@ class Controller extends \Package
             $debugStack = new \Doctrine\DBAL\Logging\DebugStack();
 
             // Cache javascript renderer object.
-            $renderer = $bar->getJavascriptRenderer(BASE_URL . '/packages/php_debugbar/vendor/maximebf/debugbar/src/DebugBar/Resources');
+            $renderer = $bar->getJavascriptRenderer(DIR_REL . '/packages/php_debugbar/vendor/maximebf/debugbar/src/DebugBar/Resources');
 
             \Database::connection()->getConfiguration()->setSQLLogger($debugStack);
 
