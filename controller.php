@@ -54,9 +54,12 @@ class Controller extends \Package
             $bar->addCollector(new \DebugBar\Bridge\DoctrineCollector($debugStack));
             \View::getInstance()->addHeaderItem($renderer->renderHead());
 
-            \Events::addListener('on_shutdown', function () use ($renderer) {
+            \Events::addListener('on_page_output', function ($event) use ($renderer) {
                 if(is_object(\Page::getCurrentPage())) {
-                    echo $renderer->render();
+                    $output = $renderer->render();
+                    $originalContent = $event->getArgument('contents');
+                    $newContent = str_replace('</body>', $output . '</body>', $originalContent);
+                    $event->setArgument('contents', $newContent);
                 }
             });
         }
